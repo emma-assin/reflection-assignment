@@ -4384,7 +4384,8 @@ function _Browser_load(url)
 		}
 	}));
 }
-var $author$project$Main$init = {eyeRotation: 0.0, lineOpacity: '0', sliderXValue: 50.0};
+var $elm$core$Basics$False = {$: 'False'};
+var $author$project$Main$init = {collision: false, eyeRotation: 0.0, ghostHeight: 50.0, ghostWidth: 50.0, ghostX: 0.0, ghostY: 0.0, imageSource: 'img/face_eyes_open.png', line2X1: 0.0, line2X2: 0.0, line2Y1: 0.0, line2Y2: 0.0, line3X1: 0.0, line3X2: 0.0, line3Y1: 0.0, line3Y2: 0.0, lineOpacity: '0', sliderXValue: 50.0};
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
@@ -4486,7 +4487,6 @@ var $elm$core$Result$Ok = function (a) {
 var $elm$json$Json$Decode$OneOf = function (a) {
 	return {$: 'OneOf', a: a};
 };
-var $elm$core$Basics$False = {$: 'False'};
 var $elm$core$Basics$add = _Basics_add;
 var $elm$core$Maybe$Just = function (a) {
 	return {$: 'Just', a: a};
@@ -5195,6 +5195,14 @@ var $elm$browser$Browser$sandbox = function (impl) {
 			view: impl.view
 		});
 };
+var $author$project$Main$isLineIntersectRect = F8(
+	function (x1, y1, x2, y2, rx, ry, rw, rh) {
+		var intersectsTop = !(((y1 - y2) * (rx - x1)) + ((x2 - x1) * (ry - y1)));
+		var intersectsRight = !(((y1 - y2) * ((rx + rw) - x1)) + ((x2 - x1) * (ry - y1)));
+		var intersectsLeft = !(((y1 - y2) * (rx - x1)) + ((x2 - x1) * (ry - y1)));
+		var intersectsBottom = !(((y1 - y2) * (rx - x1)) + ((x2 - x1) * ((ry + rh) - y1)));
+		return intersectsTop || (intersectsBottom || (intersectsLeft || intersectsRight));
+	});
 var $elm$core$Basics$negate = function (n) {
 	return -n;
 };
@@ -5213,9 +5221,14 @@ var $author$project$Main$update = F2(
 				}
 			}();
 			var newRotation = (newValue < 50) ? (50 - newValue) : (-(newValue - 50));
+			var lineY2 = 0;
+			var lineY1 = 100;
+			var lineX2 = (((100 - newValue) / 100) * 1205) + (newRotation * 35);
+			var lineX1 = 0;
+			var collision = A8($author$project$Main$isLineIntersectRect, lineX1, lineY1, lineX2, lineY2, model.ghostX, model.ghostY, model.ghostWidth, model.ghostHeight);
 			return _Utils_update(
 				model,
-				{eyeRotation: newRotation, sliderXValue: newValue});
+				{collision: collision, eyeRotation: newRotation, sliderXValue: newValue});
 		} else {
 			return (model.lineOpacity === '0.5') ? _Utils_update(
 				model,
@@ -5312,8 +5325,6 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			$elm$html$Html$Events$alwaysStop,
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
-var $elm$svg$Svg$Attributes$opacity = _VirtualDom_attribute('opacity');
-var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
 var $elm$html$Html$Attributes$src = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
@@ -5331,10 +5342,8 @@ var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
 var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
-var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
 var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
 var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
-var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
 var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
 var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
 var $author$project$Main$view = function (model) {
@@ -5396,29 +5405,6 @@ var $author$project$Main$view = function (model) {
 								A2($elm$html$Html$Attributes$style, 'opacity', '0')
 							]),
 						_List_Nil),
-						A2(
-						$elm$svg$Svg$svg,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$viewBox('0 0 100% 100%'),
-								$elm$svg$Svg$Attributes$width('100%'),
-								$elm$svg$Svg$Attributes$height('100%')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$elm$svg$Svg$rect,
-								_List_fromArray(
-									[
-										$elm$svg$Svg$Attributes$x('0'),
-										$elm$svg$Svg$Attributes$y('44%'),
-										$elm$svg$Svg$Attributes$width('100%'),
-										$elm$svg$Svg$Attributes$height('12%'),
-										A2($elm$html$Html$Attributes$style, 'fill', '#A8CCCD'),
-										$elm$svg$Svg$Attributes$opacity('0.9')
-									]),
-								_List_Nil)
-							])),
 						$author$project$Main$makeAMirror('0px'),
 						$author$project$Main$makeAMirror('calc(100% - 10px)'),
 						A2(
@@ -5473,6 +5459,22 @@ var $author$project$Main$view = function (model) {
 												$elm$svg$Svg$Attributes$strokeLinecap('round'),
 												$elm$svg$Svg$Attributes$strokeOpacity(model.lineOpacity)
 											]),
+										_List_Nil),
+										A2(
+										$elm$svg$Svg$line,
+										_List_fromArray(
+											[
+												$elm$svg$Svg$Attributes$x1(
+												$elm$core$String$fromFloat((((100 - model.sliderXValue) / 100) * 1205) + (model.eyeRotation * 10)) + 'px'),
+												$elm$svg$Svg$Attributes$y1('100%'),
+												$elm$svg$Svg$Attributes$x2(
+												$elm$core$String$fromFloat((((100 - model.sliderXValue) / 100) * 1205) + (model.eyeRotation * 35)) + 'px'),
+												$elm$svg$Svg$Attributes$y2('0px'),
+												$elm$svg$Svg$Attributes$stroke('#f094c5'),
+												$elm$svg$Svg$Attributes$strokeWidth('5'),
+												$elm$svg$Svg$Attributes$strokeLinecap('round'),
+												$elm$svg$Svg$Attributes$strokeOpacity(model.lineOpacity)
+											]),
 										_List_Nil)
 									]))
 							])),
@@ -5480,7 +5482,7 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$img,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$src('img/eye.png'),
+								$elm$html$Html$Attributes$src(model.imageSource),
 								A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
 								A2($elm$html$Html$Attributes$style, 'top', '50%'),
 								A2(
@@ -5491,6 +5493,19 @@ var $author$project$Main$view = function (model) {
 								$elm$html$Html$Attributes$style,
 								'transform',
 								'translate(-50%, -50%) rotate(' + ($elm$core$String$fromFloat(model.eyeRotation) + 'deg)')),
+								A2($elm$html$Html$Attributes$style, 'transform-origin', '50% 50%'),
+								A2($elm$html$Html$Attributes$style, 'pointer-events', 'none')
+							]),
+						_List_Nil),
+						A2(
+						$elm$html$Html$img,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$src('img/ghost.png'),
+								A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+								A2($elm$html$Html$Attributes$style, 'top', '150px'),
+								A2($elm$html$Html$Attributes$style, 'left', '1000px'),
+								A2($elm$html$Html$Attributes$style, 'transform', 'translate(-50%, -50%)'),
 								A2($elm$html$Html$Attributes$style, 'transform-origin', '50% 50%'),
 								A2($elm$html$Html$Attributes$style, 'pointer-events', 'none')
 							]),
@@ -5510,7 +5525,7 @@ var $author$project$Main$view = function (model) {
 				_List_fromArray(
 					[
 						$elm$html$Html$text(
-						$elm$core$String$fromFloat(model.sliderXValue) + ('  ' + ($elm$core$String$fromFloat(model.eyeRotation) + ('  ' + ($elm$core$String$fromFloat(100 - model.sliderXValue) + ('%  ' + $elm$core$String$fromFloat((((100 - model.sliderXValue) / 100) * 1205) + (model.eyeRotation * 10))))))))
+						model.collision ? 'Collision detected!' : 'No collision')
 					])),
 				A2(
 				$elm$html$Html$div,

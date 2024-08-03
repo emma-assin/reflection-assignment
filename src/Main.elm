@@ -27,14 +27,55 @@ type alias Model =
     { sliderXValue : Float
     , eyeRotation : Float
     , lineOpacity : String
-    }
+    , imageSource : String
+    , ghostX : Float
+    , ghostY : Float
+    , ghostWidth : Float
+    , ghostHeight : Float
+    , collision : Bool
+    , line2X1 : Float
+    , line2Y1 : Float
+    , line2X2 : Float
+    , line2Y2 : Float
+    , line3X1 : Float
+    , line3Y1 : Float
+    , line3X2 : Float
+    , line3Y2 : Float
+   }
 
 init : Model
 init =
     { sliderXValue = 50.0
     , eyeRotation = 0.0
     , lineOpacity = "0"
+    , imageSource = "img/face_eyes_open.png"
+    , ghostX = 150.0
+    , ghostY = 1000.0
+    , ghostWidth = 50.0
+    , ghostHeight = 50.0
+    , collision = False
+    , line2X1 = 0.0
+    , line2Y1 = 0.0
+    , line2X2 = 0.0
+    , line2Y2 = 0.0
+    , line3X1 = 0.0
+    , line3Y1 = 0.0
+    , line3X2 = 0.0
+    , line3Y2 = 0.0
     }
+
+-- check for collision between a line and a rectangle
+isLineIntersectRect : Float -> Float -> Float -> Float -> Float -> Float -> Float -> Float -> Bool
+isLineIntersectRect x1 y1 x2 y2 rx ry rw rh =
+    let
+        -- Check if the line intersects any of the rectangle's sides
+        intersectsTop = (y1 - y2) * (rx - x1) + (x2 - x1) * (ry - y1) == 0
+        intersectsBottom = (y1 - y2) * (rx - x1) + (x2 - x1) * (ry + rh - y1) == 0
+        intersectsLeft = (y1 - y2) * (rx - x1) + (x2 - x1) * (ry - y1) == 0
+        intersectsRight = (y1 - y2) * (rx + rw - x1) + (x2 - x1) * (ry - y1) == 0
+    in
+    intersectsTop || intersectsBottom || intersectsLeft || intersectsRight
+
 
 type Msg
     = SliderChange String
@@ -55,14 +96,21 @@ update msg model =
                         (50 - newValue)
                     else
                         -(newValue - 50)
+
+                lineX1 = 0
+                lineY1 = 100
+                lineX2 = ((100 - newValue) / 100) * 1205 + (newRotation * 35)
+                lineY2 = 0
+
+                collision = isLineIntersectRect lineX1 lineY1 lineX2 lineY2 model.ghostX model.ghostY model.ghostWidth model.ghostHeight
             in
-            { model | sliderXValue = newValue, eyeRotation = newRotation }
+            { model | sliderXValue = newValue, eyeRotation = newRotation, collision = collision }
 
         HideLines ->
             if model.lineOpacity == "0.5" then 
             { model | lineOpacity = "0" }
             else
-            { model | lineOpacity = "0.5" }
+            { model | lineOpacity = "0.5"}
 
 makeAMirror : String -> Html msg
 makeAMirror yPos =
@@ -112,19 +160,6 @@ view model =
                     , style "cursor" "pointer"
                     , style "opacity" "0"
                     ] []
-                , svg [ viewBox "0 0 100% 100%"
-                        , width "100%"
-                        , height "100%"
-                        ]
-                    [ 
-                        rect [ x "0"
-                        , y"44%"
-                        , width "100%"
-                        , height "12%"
-                        , style "fill" "#A8CCCD"
-                        , opacity "0.9"
-                        ] []
-                    ]
         , makeAMirror "0px"
         , makeAMirror "calc(100% - 10px)"
         , div [ style "position" "absolute"
@@ -161,12 +196,30 @@ view model =
                     , strokeLinecap "round"
                     , strokeOpacity model.lineOpacity
                     ] []
+                    , line
+                    [ x1 (String.fromFloat (((100-model.sliderXValue)/100) * 1205 + (model.eyeRotation*10)) ++ "px")
+                    , y1 "100%"
+                    , x2 (String.fromFloat (((100-model.sliderXValue)/100) * 1205 + (model.eyeRotation*35)) ++ "px")
+                    , y2 "0px"
+                    , stroke "#f094c5"
+                    , strokeWidth "5"
+                    , strokeLinecap "round"
+                    , strokeOpacity model.lineOpacity
+                    ] []
                 ]
-            ], img [ src "img/eye.png"
+            ], img [ src model.imageSource
                 , style "position" "absolute"
                 , style "top" "50%"
                 , style "left" (String.fromFloat model.sliderXValue ++ "%")
                 , style "transform" ("translate(-50%, -50%) rotate(" ++ String.fromFloat model.eyeRotation ++ "deg)")
+                , style "transform-origin" "50% 50%"
+                ,style "pointer-events" "none"
+                ] []
+                , img [ src "img/ghost.png"
+                , style "position" "absolute"
+                , style "top" "150px"
+                , style "left" "1000px"
+                , style "transform" "translate(-50%, -50%)"
                 , style "transform-origin" "50% 50%"
                 ,style "pointer-events" "none"
                 ] []
@@ -178,8 +231,7 @@ view model =
         , style "text-align" "center"
         , style "font-family" "Arial"
         ]
-        [ text (String.fromFloat model.sliderXValue ++ "  " ++ String.fromFloat model.eyeRotation ++ "  " ++ String.fromFloat (100-model.sliderXValue) ++ "%  "
-        ++ String.fromFloat (((100-model.sliderXValue)/100) * 1205 + (model.eyeRotation*10))) ]
+        [ text (if model.collision then "Collision detected!" else "No collision") ]
         , div [ style "position" "absolute"
                 , style "top" "950px"
                 , style "left" "50%"
