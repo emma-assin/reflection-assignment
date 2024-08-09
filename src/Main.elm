@@ -52,7 +52,7 @@ init =
     , line3Y2 = 300.0
     }
 
--- Function to check if two line segments intersect
+-- Check if two line segments intersect
 lineIntersect : (Float, Float) -> (Float, Float) -> (Float, Float) -> (Float, Float) -> Bool
 lineIntersect (lx1, ly1) (lx2, ly2) (lx3, ly3) (lx4, ly4) =
     let
@@ -62,7 +62,7 @@ lineIntersect (lx1, ly1) (lx2, ly2) (lx3, ly3) (lx4, ly4) =
     in
     denominator /= 0 && ua >= 0 && ua <= 1 && ub >= 0 && ub <= 1
 
--- Function to check if a line intersects with a rectangle
+-- Check if a line intersects with a rectangle
 isLineIntersectRect : Float -> Float -> Float -> Float -> Float -> Float -> Float -> Float -> Bool
 isLineIntersectRect x1 y1 x2 y2 rx ry rw rh =
     let
@@ -139,17 +139,15 @@ makeAMirror yPos =
 
 view : Model -> Html Msg
 view model =
-    div [ 
-        ]
-        [ 
+    div []
+        [
             -- container for the simulation
-             div [ style "width" "800px"
+            div [ style "width" "800px"
             , style "height" "900px"
             , style "position" "relative"
             , style "margin" "0 auto"
             , style "border" "1px solid black"
-        ]
-        [ 
+            ][ 
             -- reality room
             div [ style "position" "absolute"
             , style "top" "300px"
@@ -286,7 +284,7 @@ view model =
         , style "text-align" "center"
         , style "font-family" "Arial"
         ]
-        [ text "Use the positions of the ghost's reflections in the virtual rooms to determine the ghost in the real room's position. Adjust the person to look at the real ghost." ]
+        [ text "Use the positions of the ghost's reflections in the virtual rooms to determine the ghost in the real room's position." ]
         , div [ style "position" "absolute"
                 , style "top" "950px"
                 , style "left" "50%"
